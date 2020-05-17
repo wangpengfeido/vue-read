@@ -1,8 +1,10 @@
+// Vue 类
 import Vue from './instance/index'
 import { initGlobalAPI } from './global-api/index'
 import { isServerRendering } from 'core/util/env'
 import { FunctionalRenderContext } from 'core/vdom/create-functional-component'
 
+// 它定义了Vue上的全局API，包括全局配置等，可在Vue文档中看到这些东西。
 initGlobalAPI(Vue)
 
 Object.defineProperty(Vue.prototype, '$isServer', {
