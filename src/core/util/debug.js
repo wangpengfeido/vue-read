@@ -11,6 +11,9 @@ export let formatComponentName = (noop: any)
 if (process.env.NODE_ENV !== 'production') {
   const hasConsole = typeof console !== 'undefined'
   const classifyRE = /(?:^|[-_])(\w)/g
+  /**
+   * 将'-'/'_'连接命名字符串转换为大驼峰命名字符串
+   */
   const classify = str => str
     .replace(classifyRE, c => c.toUpperCase())
     .replace(/[-_]/g, '')
@@ -33,17 +36,27 @@ if (process.env.NODE_ENV !== 'production') {
     }
   }
 
+  /**
+   * 得到vm实例的组件名。
+   * @param includeFile 结果是否包含文件名
+   * @return 带"<"">"，大驼峰格式。如"<MyComponent>"
+   */
   formatComponentName = (vm, includeFile) => {
+    // 如果是根实例，返回<Root>
     if (vm.$root === vm) {
       return '<Root>'
     }
+    // 拿到options
     const options = typeof vm === 'function' && vm.cid != null
       ? vm.options
       : vm._isVue
         ? vm.$options || vm.constructor.options
         : vm
+    // 拿到name
     let name = options.name || options._componentTag
+    // 拿到文件名
     const file = options.__file
+    // 如果name不存在并且文件名是.vue，那么以文件名作为name
     if (!name && file) {
       const match = file.match(/([^/\\]+)\.vue$/)
       name = match && match[1]

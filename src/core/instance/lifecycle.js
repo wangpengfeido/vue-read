@@ -29,9 +29,14 @@ export function setActiveInstance(vm: Component) {
   }
 }
 
+/**
+ * 初始化了内部生命周期相关属性
+ * 挂载了$parent和$root
+ */
 export function initLifecycle (vm: Component) {
   const options = vm.$options
 
+  // 定位第一个非abstract的父实例
   // locate first non-abstract parent
   let parent = options.parent
   if (parent && !options.abstract) {
@@ -41,12 +46,15 @@ export function initLifecycle (vm: Component) {
     parent.$children.push(vm)
   }
 
+  // 挂载$parent和$root
   vm.$parent = parent
   vm.$root = parent ? parent.$root : vm
 
+   // 预先创建 $children 和 $refs
   vm.$children = []
   vm.$refs = {}
 
+  // 预先创建内部属性
   vm._watcher = null
   vm._inactive = null
   vm._directInactive = false
@@ -138,6 +146,11 @@ export function lifecycleMixin (Vue: Class<Component>) {
   }
 }
 
+
+/**
+ * 将vue实例挂载到dom
+ * 在$mount中被调用
+ */
 export function mountComponent (
   vm: Component,
   el: ?Element,
@@ -146,6 +159,7 @@ export function mountComponent (
   vm.$el = el
   if (!vm.$options.render) {
     vm.$options.render = createEmptyVNode
+    // 如果不存在render函数，则创建一个新的render函数
     if (process.env.NODE_ENV !== 'production') {
       /* istanbul ignore if */
       if ((vm.$options.template && vm.$options.template.charAt(0) !== '#') ||
@@ -164,8 +178,11 @@ export function mountComponent (
       }
     }
   }
+
+  // 调用beforeMount钩子
   callHook(vm, 'beforeMount')
 
+  // 给watcher监听的函数。它会在数据更新时被调用。
   let updateComponent
   /* istanbul ignore if */
   if (process.env.NODE_ENV !== 'production' && config.performance && mark) {
@@ -176,11 +193,13 @@ export function mountComponent (
       const endTag = `vue-perf-end:${id}`
 
       mark(startTag)
+      // 调用渲染函数生成 VNode
       const vnode = vm._render()
       mark(endTag)
       measure(`vue ${name} render`, startTag, endTag)
 
       mark(startTag)
+      // _update 会执行挂载。其他细节 TODO
       vm._update(vnode, hydrating)
       mark(endTag)
       measure(`vue ${name} patch`, startTag, endTag)
@@ -191,18 +210,23 @@ export function mountComponent (
     }
   }
 
+  // 划重点：这里就是创建watcher的地方
+  // 在watcher的构造方法内部，设置watcher到vm._watcher上（isRenderWatcher设置为true）
+  // 因为watcher的最初patch可能会调用$forceUpdate（例如，在子component的mounted钩子中），它依赖于vm._watcher被设置
   // we set this to vm._watcher inside the watcher's constructor
   // since the watcher's initial patch may call $forceUpdate (e.g. inside child
   // component's mounted hook), which relies on vm._watcher being already defined
   new Watcher(vm, updateComponent, noop, {
     before () {
       if (vm._isMounted && !vm._isDestroyed) {
+        // 触发beforeUpdate钩子
         callHook(vm, 'beforeUpdate')
       }
     }
   }, true /* isRenderWatcher */)
   hydrating = false
 
+  // 手动挂载实例，调用自身的mound钩子
   // manually mounted instance, call mounted on self
   // mounted is called for render-created child components in its inserted hook
   if (vm.$vnode == null) {
@@ -333,9 +357,15 @@ export function deactivateChildComponent (vm: Component, direct?: boolean) {
   }
 }
 
+/**
+ * 调用生命周期钩子
+ * @param hook 钩子名称
+ */
 export function callHook (vm: Component, hook: string) {
+  // #7573 当调用生命周期钩子时暂停依赖收集
   // #7573 disable dep collection when invoking lifecycle hooks
   pushTarget()
+  // 调用生命周期钩子
   const handlers = vm.$options[hook]
   const info = `${hook} hook`
   if (handlers) {
@@ -343,6 +373,7 @@ export function callHook (vm: Component, hook: string) {
       invokeWithErrorHandling(handlers[i], vm, null, vm, info)
     }
   }
+  // 触发钩子事件
   if (vm._hasHookEvent) {
     vm.$emit('hook:' + hook)
   }

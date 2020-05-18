@@ -1,3 +1,7 @@
+/**
+ * VUE 入口
+ */
+
 // Vue 类
 import Vue from './instance/index'
 import { initGlobalAPI } from './global-api/index'

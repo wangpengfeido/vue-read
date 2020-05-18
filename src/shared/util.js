@@ -8,6 +8,9 @@ export function isUndef (v: any): boolean %checks {
   return v === undefined || v === null
 }
 
+/**
+ * 判断某个变量是否非undefined并且非null
+ */
 export function isDef (v: any): boolean %checks {
   return v !== undefined && v !== null
 }
@@ -21,6 +24,9 @@ export function isFalse (v: any): boolean %checks {
 }
 
 /**
+ * 检查一个值是否是原生类型
+ */
+/**
  * Check if value is primitive.
  */
 export function isPrimitive (value: any): boolean %checks {
@@ -33,6 +39,10 @@ export function isPrimitive (value: any): boolean %checks {
   )
 }
 
+/**
+ * 快速对象检查。
+ * 它主要用于从JSON顺从的原始值中辨别对象
+ */
 /**
  * Quick object check - this is primarily used to tell
  * Objects from primitive values when we know the value
@@ -51,6 +61,10 @@ export function toRawType (value: any): string {
   return _toString.call(value).slice(8, -1)
 }
 
+/**
+ * 严格对象类型检查。
+ * 只有是plain object时才会返回true。
+ */
 /**
  * Strict object type check. Only returns true
  * for plain JavaScript objects.
@@ -100,6 +114,11 @@ export function toNumber (val: string): number | string {
 }
 
 /**
+ * 生成一个map，并返回一个函数来检查一个key是否在map中
+ * @param str 以逗号分隔的字符串
+ * @param expectsLowerCase 是否转换为小写
+ */
+/**
  * Make a map and return a function for checking if a key
  * is in that map.
  */
@@ -118,6 +137,10 @@ export function makeMap (
 }
 
 /**
+ * 检查一个标签是否是内置标签
+ * 对于内置标签，它一定不是静态的
+ */
+/**
  * Check if a tag is a built-in tag.
  */
 export const isBuiltInTag = makeMap('slot,component', true)
@@ -127,6 +150,9 @@ export const isBuiltInTag = makeMap('slot,component', true)
  */
 export const isReservedAttribute = makeMap('key,ref,slot,slot-scope,is')
 
+/**
+ * 从数组中移除元素
+ */
 /**
  * Remove an item from an array.
  */
@@ -140,13 +166,21 @@ export function remove (arr: Array<any>, item: any): Array<any> | void {
 }
 
 /**
+ * 检查对象中是否包含一个属性
+ */
+/**
  * Check whether an object has the property.
  */
 const hasOwnProperty = Object.prototype.hasOwnProperty
 export function hasOwn (obj: Object | Array<*>, key: string): boolean {
+  // 之所以要这样调用，是为了避免对象上有自定义的名为hasOwnProperty的属性。
   return hasOwnProperty.call(obj, key)
 }
 
+/**
+ * 创建一个纯函数的缓存版本（仅适用于只有一个字符串参数的函数）
+ * 返回的函数缓存版本，它会缓存每次调用的结果，当对这个函数传入相同参数时，直接返回曾经计算出的结果，而不会重新计算
+ */
 /**
  * Create a cached version of a pure function.
  */
@@ -159,6 +193,9 @@ export function cached<F: Function> (fn: F): F {
 }
 
 /**
+ * 将一个连字符分隔的字符串转换为驼峰字符串
+ */
+/**
  * Camelize a hyphen-delimited string.
  */
 const camelizeRE = /-(\w)/g
@@ -166,6 +203,9 @@ export const camelize = cached((str: string): string => {
   return str.replace(camelizeRE, (_, c) => c ? c.toUpperCase() : '')
 })
 
+/**
+ * 大写字符串的第一个字母
+ */
 /**
  * Capitalize a string.
  */
@@ -226,6 +266,10 @@ export function toArray (list: any, start?: number): Array<any> {
 }
 
 /**
+ * 混入属性到目标对象中
+ * 它执行的是一层浅复制
+ */
+/**
  * Mix properties into target object.
  */
 export function extend (to: Object, _from: ?Object): Object {
@@ -250,6 +294,10 @@ export function toObject (arr: Array<any>): Object {
 
 /* eslint-disable no-unused-vars */
 
+
+/**
+ * 它代表没有操作
+ */
 /**
  * Perform no operation.
  * Stubbing args to make Flow happy without leaving useless transpiled code
@@ -258,12 +306,18 @@ export function toObject (arr: Array<any>): Object {
 export function noop (a?: any, b?: any, c?: any) {}
 
 /**
+ * 一个永远返回false的函数
+ */
+/**
  * Always return false.
  */
 export const no = (a?: any, b?: any, c?: any) => false
 
 /* eslint-enable no-unused-vars */
 
+/**
+ * 返回相同的值
+ */
 /**
  * Return the same value.
  */

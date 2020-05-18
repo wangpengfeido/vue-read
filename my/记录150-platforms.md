@@ -9,7 +9,9 @@ Vue 包含编译器和运行时。
 下面是Vue完整版的渲染过程。
 ![](./_images/Vue$mount.png)
 
-## 150210 $mount
+## 150210
+$mount
+
 $mount的实现。
 
 先来看运行时版本。它执行了生命周期中的 mountComponent挂载实例。详情见 #010110。

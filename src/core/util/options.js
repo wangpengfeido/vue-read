@@ -381,6 +381,11 @@ function assertObjectType (name: string, value: any, vm: ?Component) {
   }
 }
 
+
+/**
+ * 合并两个option对象为一个新的
+ * 核心工具，在实例化和继承时使用
+ */
 /**
  * Merge two option objects into a new one.
  * Core utility used in both instantiation and inheritance.
@@ -394,29 +399,38 @@ export function mergeOptions (
     checkComponents(child)
   }
 
+  // 当child是Vue类时，将其赋值为options
   if (typeof child === 'function') {
     child = child.options
   }
 
+  // 统一格式
   normalizeProps(child, vm)
   normalizeInject(child, vm)
   normalizeDirectives(child)
 
+  // 应用child的extends和mixins，
+  // 但是只有它是一个原始的options对象而不是另一个mergeOptions结果时才会调用。这个判断是根据_base完成的。
   // Apply extends and mixins on the child options,
   // but only if it is a raw options object that isn't
   // the result of another mergeOptions call.
   // Only merged options has the _base property.
   if (!child._base) {
     if (child.extends) {
+      // 将child的extends选项合并进parent的options
       parent = mergeOptions(parent, child.extends, vm)
     }
     if (child.mixins) {
+      // 将child的mixins选项合并进parent的options
       for (let i = 0, l = child.mixins.length; i < l; i++) {
         parent = mergeOptions(parent, child.mixins[i], vm)
       }
     }
   }
 
+  // 合并
+  // 过程是这样的：有一个strats数组，里面保存了不同key的合并逻辑
+  // 如果在strats数组中存在对应key的合并逻辑则使用，否则使用默认合并逻辑
   const options = {}
   let key
   for (key in parent) {

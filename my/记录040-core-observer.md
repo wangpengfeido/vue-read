@@ -16,14 +16,14 @@ observer，dep，watcher之间有下面的关系：
 ## 040020
 Observer。
 
-在````src/core/observer/index.js````
+在[/src/core/observer/index.js](../src/core/observer/index.js)
 
 ## 040030
 Dep。
 
-在````src/core/observer/dep.js````
+在[/src/core/observer/dep.js](../src/core/observer/dep.js)
 
 ## 040040
 Watcher
 
-在````src/core/observer/watcher.js````
+在[/src/core/observer/watcher.js](../src/core/observer/watcher.js)

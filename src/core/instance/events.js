@@ -9,9 +9,17 @@ import {
 } from '../util/index'
 import { updateListeners } from '../vdom/helpers/index'
 
+/**
+ * 初始化内部事件对象
+ * 处理父作用域中注册的事件
+ */
 export function initEvents (vm: Component) {
+  // 创建用于存储事件的对象
   vm._events = Object.create(null)
+  // 钩子事件标识
   vm._hasHookEvent = false
+  // 初始化在父作用域中的注册的listeners
+  // _parentListeners就是在父组件模板中注册的listeners
   // init parent attached events
   const listeners = vm.$options._parentListeners
   if (listeners) {
