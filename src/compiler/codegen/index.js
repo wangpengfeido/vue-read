@@ -30,6 +30,7 @@ export class CodegenState {
     const isReservedTag = options.isReservedTag || no
     this.maybeComponent = (el: ASTElement) => !!el.component || !isReservedTag(el.tag)
     this.onceId = 0
+    // staticRoot为true的节点会单独生成staticRenderFns。并且它只会执行一次生成。
     this.staticRenderFns = []
     this.pre = false
   }
@@ -40,6 +41,10 @@ export type CodegenResult = {
   staticRenderFns: Array<string>
 };
 
+/**
+ * 将 ast 编译为渲染代码字符串
+ * 后面会用 new Function 转换为真正的 render 函数
+ */
 export function generate (
   ast: ASTElement | void,
   options: CompilerOptions
@@ -47,11 +52,16 @@ export function generate (
   const state = new CodegenState(options)
   const code = ast ? genElement(ast, state) : '_c("div")'
   return {
+    // 这里使用了 with 语句，虽然 with 语句不严格被支持，但尤大给出了解释 https://github.com/vuejs/vue/issues/4115
+    // 使用with语句后便可以找到定义在Component上的 _c,_m 等方法
     render: `with(this){return ${code}}`,
     staticRenderFns: state.staticRenderFns
   }
 }
 
+/**
+ * 执行编译。将 AST 编译为渲染代码字符串
+ */
 export function genElement (el: ASTElement, state: CodegenState): string {
   if (el.parent) {
     el.pre = el.pre || el.parent.pre

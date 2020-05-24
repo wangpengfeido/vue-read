@@ -32,9 +32,11 @@ Vue.prototype.$mount = function (
   const options = this.$options
   // resolve template/el and convert to render function
   if (!options.render) {
+    // 如果没有自定义的 render 函数，则解析 template/el 并转换成 render 函数
     let template = options.template
     if (template) {
       if (typeof template === 'string') {
+        // 当template是一个字符串，并以"#"开头时，使用匹配元素的 innerHTML 作为模板
         if (template.charAt(0) === '#') {
           template = idToTemplate(template)
           /* istanbul ignore if */
@@ -46,14 +48,17 @@ Vue.prototype.$mount = function (
           }
         }
       } else if (template.nodeType) {
+        // 如果是一个 Element ，使用它的 innerHTML 作为 template
         template = template.innerHTML
       } else {
+        // template 类型不对，报错
         if (process.env.NODE_ENV !== 'production') {
           warn('invalid template option:' + template, this)
         }
         return this
       }
     } else if (el) {
+      // 如果没有 template 获取外部的 html
       template = getOuterHTML(el)
     }
     if (template) {
@@ -62,6 +67,7 @@ Vue.prototype.$mount = function (
         mark('compile')
       }
 
+      // 将 template 编译为 render 函数
       const { render, staticRenderFns } = compileToFunctions(template, {
         outputSourceRange: process.env.NODE_ENV !== 'production',
         shouldDecodeNewlines,
@@ -79,6 +85,8 @@ Vue.prototype.$mount = function (
       }
     }
   }
+
+  // 调用运行时版本的$mount。
   return mount.call(this, el, hydrating)
 }
 

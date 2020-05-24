@@ -201,6 +201,9 @@ function initComputed (vm: Component, computed: Object) {
     }
 
     if (!isSSR) {
+      // 为计算输定创建内部watcher（一个计算属性创建一个watcher）
+      // 并将其存放在_computedWatchers中
+      // 最后一个参数lazy:true，这表明watcher不会在数据变化时计算，而是computed属性get时计算
       // create internal watcher for the computed property.
       watchers[key] = new Watcher(
         vm,
@@ -210,10 +213,13 @@ function initComputed (vm: Component, computed: Object) {
       )
     }
 
+
+    // 组件定义的computed属性已经定义在组件的prototype中，
+    // 我们只需要再将computed属性定义在实例中
     // component-defined computed properties are already defined on the
     // component prototype. We only need to define computed properties defined
     // at instantiation here.
-    if (!(key in vm)) {
+    if (!(key in vm)) {    // 判断没有重名属性
       defineComputed(vm, key, userDef)
     } else if (process.env.NODE_ENV !== 'production') {
       if (key in vm.$data) {
@@ -225,6 +231,9 @@ function initComputed (vm: Component, computed: Object) {
   }
 }
 
+/**
+ * 将计算属性（包含get/set）定义在vm上
+ */
 export function defineComputed (
   target: any,
   key: string,
@@ -253,9 +262,15 @@ export function defineComputed (
       )
     }
   }
+  // 在vm上定义computed属性
   Object.defineProperty(target, key, sharedPropertyDefinition)
 }
 
+
+/**
+ * 创建计算属性的getter
+ * 中间会调用为计算属性创建的watcher，计算wathcher的值并获取
+ */
 function createComputedGetter (key) {
   return function computedGetter () {
     const watcher = this._computedWatchers && this._computedWatchers[key]

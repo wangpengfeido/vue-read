@@ -52,6 +52,10 @@ if (process.env.NODE_ENV !== 'production') {
     })
   }
 
+  /**
+   * 一个 proxy 的 has 方法
+   * 如果找不到对应属性，或不是全局属性，报错
+   */
   const hasHandler = {
     has (target, key) {
       const has = key in target
@@ -65,6 +69,10 @@ if (process.env.NODE_ENV !== 'production') {
     }
   }
 
+  /**
+   * 一个 proxy 的 get 方法
+   * 当在vm上找不到对应属性时，报错
+   */
   const getHandler = {
     get (target, key) {
       if (typeof key === 'string' && !(key in target)) {

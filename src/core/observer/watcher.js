@@ -19,41 +19,62 @@ import type { SimpleSet } from '../util/index'
 let uid = 0
 
 /**
+ * watcher 分析表达式，收集依赖，当表达式值变化时触发回调。
+ * 它被用在 $watch api 和 指令
+ */
+/**
  * A watcher parses an expression, collects dependencies,
  * and fires callback when the expression value changes.
  * This is used for both the $watch() api and directives.
  */
 export default class Watcher {
+  // Vue实例
   vm: Component;
+  // 表达式
   expression: string;
   cb: Function;
   id: number;
   deep: boolean;
   user: boolean;
+  // 选项。关于lazy选项，它是用于computed。
+  // 如果它为true，那么数据更新时不会立刻计算值（创建watcher时也不会计算），而是调用evaluate方法时才计算
+  // 这样就实现了：只有在获取computed属性的值时才计算一次
   lazy: boolean;
   sync: boolean;
+  // 配合lazy使用。是否数据变化了，但是并未求值
   dirty: boolean;
   active: boolean;
+  // watcher订阅的deps
   deps: Array<Dep>;
+  // 收集依赖的中转。在watcher触发getter后的收集依赖中，订阅被存放在newDeps中，完成后再转移到deps中
   newDeps: Array<Dep>;
   depIds: SimpleSet;
   newDepIds: SimpleSet;
+  // options中的一个函数，在watcher被触发update时首先调用
   before: ?Function;
+  // getter-获取表达式值的方法
   getter: Function;
+  // 计算出的表达式的值
   value: any;
 
   constructor (
     vm: Component,
+    // 表达式
     expOrFn: string | Function,
+    // 回调函数。触发更新时执行
     cb: Function,
     options?: ?Object,
+     // 是否是渲染用watcher。即watcher对应的vm是否被渲染。如果它为true，将会把该watcher赋给vm._watcher
     isRenderWatcher?: boolean
   ) {
     this.vm = vm
+    // 如果是渲染用watcher，把该watcher赋给vm._watcher
     if (isRenderWatcher) {
       vm._watcher = this
     }
+    // 当前Watcher添加到vue实例上
     vm._watchers.push(this)
+    // options 配置
     // options
     if (options) {
       this.deep = !!options.deep
@@ -75,11 +96,13 @@ export default class Watcher {
     this.expression = process.env.NODE_ENV !== 'production'
       ? expOrFn.toString()
       : ''
+    // 将表达式转换为(getter)函数
     // parse expression for getter
     if (typeof expOrFn === 'function') {
       this.getter = expOrFn
     } else {
       this.getter = parsePath(expOrFn)
+      // 当表达式不合法（不能转换为getter），将getter设置为空操作
       if (!this.getter) {
         this.getter = noop
         process.env.NODE_ENV !== 'production' && warn(
@@ -90,19 +113,26 @@ export default class Watcher {
         )
       }
     }
+    // 获取到表达式的值，它会触发一次依赖收集
     this.value = this.lazy
       ? undefined
       : this.get()
   }
 
   /**
+   * 求 getter函数 的值，重新收集依赖
+   * @return 计算出的值
+   */
+  /**
    * Evaluate the getter, and re-collect dependencies.
    */
   get () {
+    // 将watcher入栈并设置为当前求值watcher
     pushTarget(this)
     let value
     const vm = this.vm
     try {
+      // 计算值
       value = this.getter.call(vm, vm)
     } catch (e) {
       if (this.user) {
@@ -116,12 +146,18 @@ export default class Watcher {
       if (this.deep) {
         traverse(value)
       }
+      // 求值完成，watcher出栈，不再是当前watcher
       popTarget()
+      // 清理deps
       this.cleanupDeps()
     }
     return value
   }
 
+  /**
+   * 为指令添加一个dep
+   * 即使使该watcher订阅一个dep
+   */
   /**
    * Add a dependency to this directive.
    */
@@ -136,6 +172,9 @@ export default class Watcher {
     }
   }
 
+  /**
+   * 收集依赖后的清理。主要是将new deps转移到deps中
+   */
   /**
    * Clean up for dependency collection.
    */
@@ -158,6 +197,11 @@ export default class Watcher {
   }
 
   /**
+   * 订阅接口。
+   * 当依赖改变时被调用。
+   * 即 dep 会通过它通知 watcher 数据更新。
+   */
+  /**
    * Subscriber interface.
    * Will be called when a dependency changes.
    */
@@ -172,6 +216,11 @@ export default class Watcher {
     }
   }
 
+  /**
+   * 调度工作接口。
+   * 被调度器调用。
+   * 它会重新计算value值，并调用回调函数
+   */
   /**
    * Scheduler job interface.
    * Will be called by the scheduler.

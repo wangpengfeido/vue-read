@@ -102,15 +102,23 @@ initState在[/src/core/instance/state.js](../src/core/instance/state.js)，第50
 
 它的作用是将vue实例挂载到dom。它在$mount中被调用，见[#150210](./记录150-platforms.md#150210)。
 
-打开[/src/core/instance/lifecycle.js](../src/core/instance/lifecycle.js)，第150行左右。
+打开[/src/core/instance/lifecycle.js](../src/core/instance/lifecycle.js)，第160行左右。
 
 **重点**：这个方法内部创建了watcher
 
 
 
+// TODO:
+proxy.js
+state.js - 计算属性
+create-element.js
+patch.js
+vnode.js
 
-
-
+copliler/indexjs
+optimizer.js
+codegen
+html-parser.js
 
 
 

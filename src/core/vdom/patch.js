@@ -32,6 +32,9 @@ export const emptyNode = new VNode('', {}, [])
 
 const hooks = ['create', 'activate', 'update', 'remove', 'destroy']
 
+/**
+ * 比较两个VNode是否相同
+ */
 function sameVnode (a, b) {
   return (
     a.key === b.key && (
@@ -49,6 +52,10 @@ function sameVnode (a, b) {
   )
 }
 
+/**
+ * 检查两个Input tag的VNodes的type是否相同
+ * 相同的前提是两个都是input，并且两个VNode的data、attrs、type属性都存在
+ */
 function sameInputType (a, b) {
   if (a.tag !== 'input') return true
   let i
@@ -122,6 +129,9 @@ export function createPatchFunction (backend) {
 
   let creatingElmInVPre = 0
 
+  /**
+   * 创建元素
+   */
   function createElm (
     vnode,
     insertedVnodeQueue,
@@ -697,20 +707,30 @@ export function createPatchFunction (backend) {
     }
   }
 
+  /**
+   * @param oldVnode 旧的虚拟节点或旧的真实元素节点
+   * @param vnode 新的虚拟节点
+   * @param hydrating 是否启用真实dom混合
+   */
   return function patch (oldVnode, vnode, hydrating, removeOnly) {
     if (isUndef(vnode)) {
+      // 如果vnode不存在，就要中止
+      // 并且如果oldVnode存在，那么就要将其销毁
       if (isDef(oldVnode)) invokeDestroyHook(oldVnode)
       return
     }
 
+    // 是否是最初的patch（未挂载，没有oldVnode）
     let isInitialPatch = false
     const insertedVnodeQueue = []
 
     if (isUndef(oldVnode)) {
+      // 如果没有oldVNode(未挂载，可能是组件)，创建一个根元素
       // empty mount (likely as component), create new root element
       isInitialPatch = true
       createElm(vnode, insertedVnodeQueue)
     } else {
+      // oldVnode是否是真实元素。如果它有nodeType（标准中定义的node类型）则说明它是真实元素
       const isRealElement = isDef(oldVnode.nodeType)
       if (!isRealElement && sameVnode(oldVnode, vnode)) {
         // patch existing root node

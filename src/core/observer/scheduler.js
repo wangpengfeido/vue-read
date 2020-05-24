@@ -14,6 +14,7 @@ import {
 
 export const MAX_UPDATE_COUNT = 100
 
+// watcher队列
 const queue: Array<Watcher> = []
 const activatedChildren: Array<Component> = []
 let has: { [key: number]: ?true } = {}
